@@ -1,0 +1,18 @@
+body {
+  background: linear-gradient(45deg, rgba(34, 164, 116, 1) 0%, rgba(41, 47, 143, 1) 100%);
+
+}
+
+h1 {
+  /* position: fixed; */
+  width: 100%;
+  text-align: center;
+  top: 0;
+}
+
+#CARD {
+  /* position:sticky; */
+  /* top:0; */
+  background-image: linear-gradient(to left, #DECBA4, #3E5151);
+
+}
