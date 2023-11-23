@@ -10,7 +10,7 @@ h1 {
   top: 0;  
 }
 
-#CARD {
+#CARD ,.cd2{
   /* position:sticky; */
   /* top:0; */
   background-image: linear-gradient(to left, #DECBA4, #3E5151);
