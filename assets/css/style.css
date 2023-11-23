@@ -7,7 +7,7 @@ h1 {
   /* position: fixed; */
   width: 100%;
   text-align: center;
-  top: 0;
+  top: 0;  
 }
 
 #CARD {
@@ -15,4 +15,8 @@ h1 {
   /* top:0; */
   background-image: linear-gradient(to left, #DECBA4, #3E5151);
 
+}
+div#card {
+  display: flex;
+  flex-direction: column-reverse;
 }
