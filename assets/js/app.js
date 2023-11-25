@@ -108,7 +108,7 @@ const onUpdate = ele => {
                 submit.classList.remove(`d-none`)
             tempalting(postArray);
             Swal.fire({
-                position: "top-end",
+                position: "top-center",
                 icon: "success",
                 title: "Successfully Updated!!!",
                 showConfirmButton: false,
