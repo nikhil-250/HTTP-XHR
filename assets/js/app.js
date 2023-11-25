@@ -36,6 +36,12 @@ const CreateHandler = eve => {
             eve.id = JSON.parse(xhr.response).id
             postArray.push(eve)
             tempalting(postArray)
+            Swal.fire({
+                position: "top-center",
+                icon: "success",
+                title: "Successfully Added!!!",
+                showConfirmButton: false,
+              });
         }
     }
 }
