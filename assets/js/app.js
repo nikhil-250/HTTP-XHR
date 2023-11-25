@@ -60,6 +60,7 @@ const GetHandler = eve => {
 GetHandler()
 const OnEdit = ele => {
     let getID = ele.closest('.card').id
+    localStorage.setItem(`get`, getID)
     let getUrl = `${post}/${getID}`
     let xhr = new XMLHttpRequest()
     xhr.open(`GET`, getUrl, true)
@@ -76,6 +77,74 @@ const OnEdit = ele => {
         }
     }
 }
+const onUpdate = ele => {
+    let newOj = {
+        title: titleControl.value,
+        body: bodyControl.value,
+        userID: UserIdControl.value,
+    }
+    cl(newOj)
+    let getID = localStorage.getItem(`get`)
+    let updatedUrl = `${post}/${getID}`
+    let xhr = new XMLHttpRequest()
+    xhr.open(`PATCH`, updatedUrl, true)
+    xhr.send(JSON.stringify(newOj))
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            let getIndex2 = postArray.findIndex(ele => {
+                return ele.id == getID
+
+            })
+            postArray[getIndex2].title = newOj.title,
+                postArray[getIndex2].body = newOj.body,
+                postArray[getIndex2].userID = newOj.userID
+            tempalting(postArray);
+            Swal.fire({
+                position: "top-end",
+                icon: "success",
+                title: "Successfully Updated!!!",
+                showConfirmButton: false,
+              });
+        }
+
+
+    }
+    formControl.reset()
+}
+const OnDelete = ele => {
+    let getDeleteID = ele.closest(`.card`).id
+    let DeleteUrl = `${post}/${getDeleteID}`
+    let xhr = new XMLHttpRequest()
+    xhr.open(`DELETE`, DeleteUrl, true)
+    xhr.send()
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "Your file has been deleted.",
+                        icon: "success",
+                        timer: 1500
+                    });
+                    document.getElementById(getDeleteID).remove();
+                }
+            });
+            
+        }
+    }
+
+}
+
+
 
 let tempalting = (arr => {
     let result = ``;
@@ -92,7 +161,7 @@ let tempalting = (arr => {
         </div>
         <div class="card-footer d-flex justify-content-between ">
             <button class="btn btn-success" onClick="OnEdit(this)" > edit</button>
-            <button class="btn btn-danger"> delete</button>
+            <button class="btn btn-danger" onClick="OnDelete(this)"> delete</button>
         </div>
     </div>`
 
@@ -100,6 +169,7 @@ let tempalting = (arr => {
     card.innerHTML = result;
 })
 formControl.addEventListener(`submit`, onSubmit)
+update.addEventListener(`click`, onUpdate)
 
 
 
