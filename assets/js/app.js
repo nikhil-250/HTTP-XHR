@@ -104,6 +104,8 @@ const onUpdate = ele => {
             postArray[getIndex2].title = newOj.title,
                 postArray[getIndex2].body = newOj.body,
                 postArray[getIndex2].userID = newOj.userID
+                update.classList.add(`d-none`)
+                submit.classList.remove(`d-none`)
             tempalting(postArray);
             Swal.fire({
                 position: "top-end",
