@@ -1,185 +1,221 @@
-const cl = console.log;
-const card = document.getElementById(`card`)
-const formControl = document.getElementById(`postform`)
-const titleControl = document.getElementById(`title`)
-const bodyControl = document.getElementById(`body`)
-const UserIdControl = document.getElementById(`userid`)
-const submit = document.getElementById(`submit`)
-const update = document.getElementById(`update`)
+ const cl = console.log;
+ let formcontrol = document.getElementById(`postform`);
+ let submitbtn = document.getElementById(`submit`);
+ let updatebtn = document.getElementById(`update`);
+ let card2 = document.getElementById(`card`);
+ let titlecontrol = document.getElementById(`title`);
+ let bodycontrol = document.getElementById(`body`);
+ let useridcontrol = document.getElementById(`UserId`)
+ let postCardContainer = document.getElementById(`postCardContainer`);
 
-let BaseUrl = `https://jsonplaceholder.typicode.com/`
+  
+  
+ let baseUrl = `https://crud-application-cdd06-default-rtdb.firebaseio.com/`
+ let postUrl = `${baseUrl}/posts.json`
 
-let post = `${BaseUrl}/posts`
-
-let postArray = [];
-
-
-
-const onSubmit = eve => {
-    eve.preventDefault()
-    let Newobj = {
-        title: titleControl.value,
-        body: bodyControl.value,
-        userID: UserIdControl.value
-    }
-    cl(Newobj)
-    formControl.reset()
-    CreateHandler(Newobj)
+ const objtoarr = (obj) => {
+  let postarr = [];
+  for (const key in obj) {
+      let obj2 = obj[key];
+      obj2.id = key;
+      postarr.push(obj2)
+      // cl(obj2)
+  }
+  return postarr;
 }
 
-const CreateHandler = eve => {
-    let xhr = new XMLHttpRequest()
-    xhr.open(`POST`, post)
-    xhr.send(JSON.stringify(eve));
-    xhr.onload = function () {
-        if (xhr.status === 200 || xhr.status === 201) {
-            eve.id = JSON.parse(xhr.response).id
-            postArray.push(eve)
-            tempalting(postArray)
-            Swal.fire({
-                position: "top-center",
-                icon: "success",
-                title: "Successfully Added!!!",
-                showConfirmButton: false,
-              });
-        }
+ const apicall = async (apiurl,methodname,bodymsg = null) =>{
+  let res = await fetch(apiurl,{
+    method:methodname,
+    body:bodymsg,
+    headers:{
+     "content-type" : "application/json"
     }
+  })
+  cl(res)
+  return await res.json()
+ }
+
+ const getcard = async () => {
+  try{
+    let data = await apicall(postUrl,"GET");
+    let datarr = objtoarr(data)
+    cl(data)
+    cl(datarr)
+    datarr.forEach(ele => postobjtemplating(ele))
+  }catch(err){
+   cl(err)
+  }
+ }
+ getcard()
+ const onAddpost = async (ele) => {
+   ele.preventDefault()
+   let newObj ={
+    title:titlecontrol.value ,
+    body:bodycontrol.value,
+    userId:useridcontrol.value,
+   }
+   cl(newObj)
+   try{
+let res = await apicall(postUrl,`POST`,JSON.stringify(newObj));
+ newObj.id = res.name
+postobjtemplating(newObj)
+Swal.fire({
+  position: "top-center",
+  icon: "success",
+  title: "New Card Created Successfully!!!",
+  showConfirmButton: false,
+});
+   }catch(err){
+  cl(err)
+   }finally{
+    formcontrol.reset()
+   }
+ }
+const onEdit = async (ele) => {
+  let editId = ele.closest(`.card`).id;
+  let editUrl =`${baseUrl}/posts/${editId}.json`
+  localStorage.setItem(`editId`,editId)
+  cl(editId)
+  cl(editUrl)
+  try{
+   let res = await apicall(editUrl,"GET");
+   titlecontrol.value = res.title,
+   bodycontrol.value = res.body,
+   useridcontrol.value = res.userId, 
+   scrollToTop()
+  }catch(err){
+    cl(err)
+  }finally{
+    updatebtn.classList.remove(`d-none`)
+    submitbtn.classList.add(`d-none`)
+  }
+}
+const onUpdate = async(ele) => {
+  let updatedId = localStorage.getItem(`editId`)
+  let updatedurl = `${baseUrl}/posts/${updatedId}.json`
+  let newObj ={
+    title:titlecontrol.value,
+    body:bodycontrol.value,
+    userId:useridcontrol.value
+  }
+  try{
+    let res = await apicall(updatedurl,"PATCH",JSON.stringify(newObj));
+    let getChildren = [...document.getElementById(updatedId).children];
+    getChildren[0] =`<h2>${res.title}</h2>`,
+    getChildren[1] =`<P>${res.body}</p>`
+    Swal.fire({
+      position: "top-center",
+      icon: "success",
+      title: "Successfully Updated!!!",
+      showConfirmButton: false,
+  });
+  }catch(err){
+ cl(err)
+  }finally{
+    updatebtn.classList.add(`d-none`)
+    submitbtn.classList.remove(`d-none`)
+    formcontrol.reset()
+  }
+}
+// const onDelete = async(ele) => {
+//   let deletId = ele.closest(`.card`).id;
+//   let deleteurl = `${baseUrl}/posts/${deletId}.json`
+//   Swal.fire({
+//     title: "Are you sure?",
+//     text: "You won't be able to revert this!",
+//     icon: "warning",
+//     showCancelButton: true,
+//     confirmButtonColor: "#3085d6",
+//     cancelButtonColor: "#d33",
+//     confirmButtonText: "Yes, delete it!"
+//   }).then((result) => {
+//     if (result.isConfirmed) {
+//       try{
+//         let res = await apicall(deleteurl,`DELETE`)
+//         document.getElementById(deletId).remove()
+//       Swal.fire({
+//         title: "Deleted!",
+//         text: "Your file has been deleted.",
+//         icon: "success"
+//       });
+//     } catch(err){
+//       cl(err)
+//      } 
+//  } });           
+// }
+
+    
+
+let postobjtemplating = eve => {
+  let card = document.createElement('div');
+  card.className = 'card mb-4 background';
+  card.id = eve.id
+  card.innerHTML = `
+                      <div class="card-header">
+                          <h2>${eve.title}</h2>
+                      </div>
+                      <div class="card-body overflow-auto">
+                          <p>${eve.body}</p>
+                      </div>
+                      <div class="card-footer d-flex justify-content-between">
+                          <button class="btn btn-outline-success" onclick="onEdit(this)"><strong>Edit</strong></button>
+                          <button class="btn btn-outline-danger" onclick="onDelete(this)"><strong>Delete</strong></button>
+                      </div>
+                  </div>
+              `
+ postCardContainer.append(card);
 }
 
-const GetHandler = eve => {
-    let xhr = new XMLHttpRequest()
-    xhr.open(`GET`, post)
-
-    xhr.send()
-
-    xhr.onload = function () {
-        // cl(xhr.response)
-        if (xhr.status === 200) {
-            postArray = JSON.parse(xhr.response)
-            cl(postArray)
-            tempalting(postArray)
-        } else {
-            `Something went wrong`
-        }
-    }
-}
-GetHandler()
-const OnEdit = ele => {
-    let getID = ele.closest('.card').id
-    localStorage.setItem(`get`, getID)
-    let getUrl = `${post}/${getID}`
-    let xhr = new XMLHttpRequest()
-    xhr.open(`GET`, getUrl, true)
-    xhr.send()
-    xhr.onload = function () {
-        if (xhr.status === 200 || xhr.status === 201) {
-            let obj = JSON.parse(xhr.response)
-            cl(obj)
-            titleControl.value = obj.title
-            bodyControl.value = obj.body
-            UserIdControl.value = obj.userId
-            submit.classList.add(`d-none`)
-            update.classList.remove(`d-none`)
-        }
-    }
-}
-const onUpdate = ele => {
-    let newOj = {
-        title: titleControl.value,
-        body: bodyControl.value,
-        userID: UserIdControl.value,
-    }
-    cl(newOj)
-    let getID = localStorage.getItem(`get`)
-    let updatedUrl = `${post}/${getID}`
-    let xhr = new XMLHttpRequest()
-    xhr.open(`PATCH`, updatedUrl, true)
-    xhr.send(JSON.stringify(newOj))
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            let getIndex2 = postArray.findIndex(ele => {
-                return ele.id == getID
-
-            })
-            postArray[getIndex2].title = newOj.title,
-                postArray[getIndex2].body = newOj.body,
-                postArray[getIndex2].userID = newOj.userID
-                update.classList.add(`d-none`)
-                submit.classList.remove(`d-none`)
-            tempalting(postArray);
-            Swal.fire({
-                position: "top-center",
-                icon: "success",
-                title: "Successfully Updated!!!",
-                showConfirmButton: false,
-              });
-        }
-
-
-    }
-    formControl.reset()
-}
-const OnDelete = ele => {
-    let getDeleteID = ele.closest(`.card`).id
-    let DeleteUrl = `${post}/${getDeleteID}`
-    let xhr = new XMLHttpRequest()
-    xhr.open(`DELETE`, DeleteUrl, true)
-    xhr.send()
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            Swal.fire({
-                title: "Are you sure?",
-                text: "You won't be able to revert this!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, delete it!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({
-                        title: "Deleted!",
-                        text: "Your file has been deleted.",
-                        icon: "success",
-                        timer: 1500
-                    });
-                    document.getElementById(getDeleteID).remove();
-                }
-            });
-            
-        }
-    }
-
-}
-
-
-
-let tempalting = (arr => {
-    let result = ``;
-    arr.forEach(ele => {
-        result += `  <div class="card mb-4" id= "${ele.id}">
-        <div class="card-header">
-            <h3>
-                ${ele.title}
-            </h3>
-        </div>
-        <div class="card-body">
-            <p>
-               ${ele.body}
-        </div>
-        <div class="card-footer d-flex justify-content-between ">
-            <button class="btn btn-success" onClick="OnEdit(this)" > edit</button>
-            <button class="btn btn-danger" onClick="OnDelete(this)"> delete</button>
-        </div>
-    </div>`
-
+formcontrol.addEventListener(`submit`,onAddpost)
+updatebtn.addEventListener(`click`,onUpdate)
+   function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
     });
-    card.innerHTML = result;
-})
-formControl.addEventListener(`submit`, onSubmit)
-update.addEventListener(`click`, onUpdate)
+  }
 
 
-
-
-//HTTP HTML Request => 1>instance 2>OPen 3>Send 4>Onload >> Before ES-6
+//   const onDelete = eve => {
+//     let deleteid = eve.closest('.card').id;
+//     let deleteUrl = `${baseUrl}/posts/${deleteid}.json`;
+//     Swal.fire({
+//         title: "Are you sure?",
+//         text: "You won't be able to revert this!",
+//         icon: "warning",
+//         showCancelButton: true,
+//         confirmButtonColor: "#3085d6",
+//         cancelButtonColor: "#d33",
+//         confirmButtonText: "Yes, delete it!"
+//       }).then((result) => {
+//         if (result.isConfirmed) {
+//             loader.classList.remove("d-none");
+//             fetch(deleteUrl, {
+//                 method: "delete",
+//                 headers: {
+//                     'content-type': 'application/json'
+//                 }
+//             })
+//             .then(res => {
+//                 loader.classList.add('d-none')
+//                 return res.json();
+//             })
+//             .then(res => {
+//                 document.getElementById(deleteid).parentNode.remove();
+//                 Swal.fire({
+//                     title: "Deleted!",
+//                     text: "Your file has been deleted.",
+//                     icon: "success",
+//                     timer: 1000
+//                   });
+//             })
+//             .catch(error => cl(error))
+//             .finally(()=>{
+//                 updtbtn.classList.add("d-none");
+//                 submtbtn.classList.remove("d-none");
+//                 postform.reset();
+//             })
+//         }
+//       });       
+// }
